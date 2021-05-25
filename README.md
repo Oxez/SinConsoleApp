@@ -1,0 +1,2 @@
+# SinConsoleApp
+Freelance sinus project
