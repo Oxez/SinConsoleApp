@@ -5,6 +5,7 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+#include <stdio.h>
 #include <string>
 
 #define KEY_ARROW_RIGHT 77
@@ -16,19 +17,13 @@
 using namespace std;
 
 HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-COORD CursorPos, Matrix = { 75, 0 };
+COORD CursorPos;
 
-int n1 = 0, n2 = 0, n3 = 0, n4 = 0, n5 = 0, n6 = 0, n12 = 0, n13 = 0, n14 = 0, n15 = 0, n16 = 0, n23 = 0, n24 = 0, n25 = 0, n26 = 0, n34 = 0, n35 = 0, n36 = 0, n45 = 0, n46 = 0, n56 = 0;
+int ar1; // интеджер для первого аргумента в функциях
+double arguments[9];
+string menu1[3] = { "Sinus", "Polynom", "[0] Exit\n"}; // первое меню
+string menu2[4] = { "Left", "Right", "Trap", "< go back\n" }; // второе меню
 
-int color2, color3, color4, color5;
-
-string menu1[3] = { "four", "five", "six" };
-string menu2[2] = { "yes", "no" };
-string menu3[4] = { "painting", "connectivity", "the shortest way", "exit" };
-string menu4[6] = { "1","2","3","4","5","6" };
-string menupainting[3] = { "connectivity", "the shortest way", "exit" };
-string menuconnectivity[3] = { "painting", "the shortest way", "exit" };
-string menudouble[2] = { "the shortest way", "exit" };
 
 BOOL ShowConsoleCursor(BOOL bShow)
 {
@@ -59,35 +54,27 @@ void drawmenu(HANDLE h, COORD c, int k, int n, int len, string menu[])
 	SetConsoleTextAttribute(h, ATTR1);
 }
 
-void drawline()
+int cycle(int z, int len, string menu[])
 {
-	CursorPos.X = 70;
-	for (int zikkurat = 0; zikkurat < 40; zikkurat++)
+	int k = 0, iKey = 67;
+	drawmenu(hStdOut, CursorPos, k, z, len, menu);
+	while (iKey != KEY_ENTER)
 	{
-		CursorPos.Y = zikkurat;
-		SetConsoleCursorPosition(hStdOut, CursorPos);
-		cout << "|";
+		if (_kbhit())
+		{
+			iKey = _getch();
+			switch (iKey)
+			{
+			case KEY_ARROW_RIGHT: k++; if (k == z) k = 0;
+				drawmenu(hStdOut, CursorPos, k, z, len, menu);
+				break;
+			case KEY_ARROW_LEFT: k--; if (k == -1) k = z - 1;
+				drawmenu(hStdOut, CursorPos, k, z, len, menu);
+				break;
+			}
+		}
 	}
-}
-
-void vangog(int n, int k)
-{
-	int z = n + 2;
-	COORD Painting;
-	Painting = { 77, 0 };
-	Painting.Y = z;
-	SetConsoleCursorPosition(hStdOut, Painting);
-	SetConsoleTextAttribute(hStdOut, 16 * k);
-	cout << n;
-	int x = 77 + n * 4;
-	Painting = { 0, 2 };
-	Painting.X = x;
-	SetConsoleCursorPosition(hStdOut, Painting);
-	cout << n;
-	if (n == 2) color2 = k;
-	if (n == 3) color3 = k;
-	if (n == 4) color4 = k;
-	if (n == 5) color5 = k;
+	return k;
 }
 
 double fSin(double x, double k, double p, double g)
@@ -166,18 +153,121 @@ double trapPol(int n, double a, double b, double a1, double a2, double a3)
 	if (r < 0) { r = r - 2 * r; };
 	return r;
 }
+
+void enterArgs(int n) { // метод для ввода аргументов
+	system("cls"); // очищаем консоль
+	cout << "Please, enter " << n << " arguments.\n";
+	for (int i = 0; i < n; i++)
+	{
+		cin >> arguments[i]; // записываем в массив
+		
+	}
+	cout << "Your args: "; // оповещаем о успешной записи
+	for (int idx = 0; idx < n; idx++)
+	{
+		cout << " " << arguments[idx]; // оповещаем о успешной записи
+	}
+	cout << ".\n";
+	ar1 = (int)arguments[0]; // переводим первый элемент в инт
+}
+
 int main() {
-	// functions to use
+	bool isSin = NULL; // переменная хранит решение о выборе функции
+	bool secondMenu = true;  // переменная хранит решение о выборе метода
+	bool exit = true;  // выйти или не выйти :D
+	COORD Begin = { 0, 0 };
+	SetConsoleTitle(L"GRAPH (Console Menu)"); // имя окна
+	COORD crd = { 120, 40 };
+	SMALL_RECT src = { 0, 0, crd.X - 1, crd.Y - 1 };
+	SetConsoleWindowInfo(hStdOut, true, &src);
+	SetConsoleScreenBufferSize(hStdOut, crd);
+	SetConsoleTextAttribute(hStdOut, 232);
+	// start while
+	while (isSin == NULL && exit) {
+		system("cls"); // очищаем
+		ShowConsoleCursor(FALSE);
+		SetConsoleCursorPosition(hStdOut, Begin);
+		cout << "Choose a function\n";
+		CursorPos = { 0, 1 };
+		int k = cycle(3, 11, menu1);
+		switch (k)
+		{
+			case 0: // синус
+				isSin = TRUE;
+				break;
+			case 1: // полином
+				isSin = FALSE;
+				break;
+			case 2: // выйти
+				exit = false;
+				break;
+
+		}
+		if (exit) {
+			while (secondMenu) {
+				system("cls");
+				CursorPos = { 0, 1 };
+				cout << "Choose a method\n";
+				int das = cycle(4, 11, menu2);
+
+				switch (das)
+				{
+				case 0:
+					// left
+					if (isSin) { // синус
+						enterArgs(6);
+						cout << "Result: " << leftSin(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]) << "\n";
+					}
+					else { // полином
+						enterArgs(6);
+						cout << "Result: " << leftPol(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]) << "\n";
+					}
+					break;
+				case 1:
+					// right
+					if (isSin) { // синус
+						enterArgs(6);
+						cout << "Result: " << rightSin(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]) << "\n";
+					}
+					else { // полином
+						enterArgs(8);
+						cout << "Result: " << rightPol(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6], arguments[7], arguments[8]) << "\n";
+					}
+					break;
+				case 2:
+					// trap
+					if (isSin) { // синус
+						enterArgs(6);
+						cout << "Result: " << trapSin(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]) << "\n";
+					}
+					else { // полином
+						enterArgs(6);
+						cout << "Result: " << trapPol(ar1, arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]) << "\n";
+					}
+					break;
+				case 3: // выйти
+					isSin = NULL;
+					secondMenu = false;
+					break;
+				}
+				isSin = NULL;
+				// этот if убирает паузу при выходе из второго меню
+				if(secondMenu)
+					system("pause");
+
+				system("cls"); // очищаем
+			}
+			secondMenu = true; // остаёмся во втором меню
+		}
+	}
+	// end while
+	SetConsoleCursorPosition(hStdOut, Begin);
+	CursorPos = { 50, 19 };
+	SetConsoleCursorPosition(hStdOut, CursorPos);
+	cout << "GAME OVER";
+	return 0;
 
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
 // Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
